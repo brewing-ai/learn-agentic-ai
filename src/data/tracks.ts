@@ -4073,6 +4073,137 @@ server.tool(
 - Custom business logic and internal tools
 - Growing ecosystem of community-built servers
 
+### MCP Server Primitives in Depth
+
+MCP servers expose three core primitives that AI models can interact with:
+
+**Tools** — Executable functions the model can invoke. Each tool has a name, description, input schema, and a handler function. Tools are the primary action mechanism.
+
+**Resources** — Read-only data endpoints the model can access. Resources expose structured data like file contents, database schemas, or configuration. They use URI-based addressing (e.g., \`file:///path/to/file\`, \`db://schema/users\`).
+
+**Prompts** — Reusable prompt templates that MCP servers can provide. Prompts allow servers to suggest structured interactions — for example, a database MCP server might offer a "query-builder" prompt that guides the model through constructing complex queries.
+
+\`\`\`
+┌─────────────────────────────────────────────────┐
+│                  MCP Server                      │
+│                                                  │
+│  ┌──────────┐  ┌───────────┐  ┌──────────────┐  │
+│  │  Tools   │  │ Resources │  │   Prompts    │  │
+│  │          │  │           │  │              │  │
+│  │ run_query│  │ db://     │  │ query-helper │  │
+│  │ insert   │  │ schema/   │  │ migration-   │  │
+│  │ migrate  │  │ tables    │  │ guide        │  │
+│  └──────────┘  └───────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────┘
+\`\`\`
+
+### Building MCP Servers
+
+**TypeScript SDK (recommended for most use cases):**
+
+\`\`\`typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const server = new McpServer({
+  name: "project-tools",
+  version: "1.0.0"
+});
+
+// Register a tool
+server.tool(
+  "list_issues",
+  "List open issues from the project tracker",
+  { status: { type: "string", enum: ["open", "closed", "all"], default: "open" } },
+  async ({ status }) => {
+    const issues = await fetchIssues(status);
+    return { content: [{ type: "text", text: JSON.stringify(issues, null, 2) }] };
+  }
+);
+
+// Register a resource
+server.resource(
+  "project-config",
+  "config://project",
+  async (uri) => ({
+    contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(config) }]
+  })
+);
+
+// Connect via stdio transport (for local use with Claude Code)
+const transport = new StdioServerTransport();
+await server.connect(transport);
+\`\`\`
+
+**Python SDK:**
+
+\`\`\`python
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+
+app = Server("analytics-server")
+
+@app.tool()
+async def run_report(report_name: str, date_range: str = "last_7_days") -> str:
+    """Run a named analytics report for the given date range."""
+    result = await generate_report(report_name, date_range)
+    return json.dumps(result)
+
+@app.resource("schema://tables")
+async def list_tables() -> str:
+    """List all available database tables and their schemas."""
+    return json.dumps(get_table_schemas())
+
+async def main():
+    async with stdio_server() as (read_stream, write_stream):
+        await app.run(read_stream, write_stream)
+\`\`\`
+
+### MCP Transport Options
+
+| Transport | Protocol | Use Case | Example |
+|-----------|----------|----------|---------|
+| **stdio** | Standard I/O streams | Local processes, Claude Code CLI | \`claude mcp add my-tool -- node server.js\` |
+| **SSE** | HTTP + Server-Sent Events | Remote servers, shared team tools | \`claude mcp add my-api --transport sse https://api.example.com/mcp\` |
+| **Streamable HTTP** | Modern HTTP streaming | Production deployments, scalable services | Stateless HTTP with optional session management |
+
+**stdio** is the most common for local development — Claude Code spawns the MCP server as a child process and communicates via stdin/stdout. No network configuration needed.
+
+**SSE (Server-Sent Events)** is used for remote MCP servers that multiple users share. The client connects over HTTP, sends requests as POST, and receives streaming responses via SSE.
+
+**Streamable HTTP** is the newest transport, designed for production deployments. It supports stateless operation (each request is independent) or stateful sessions, making it ideal for serverless and horizontally-scaled environments.
+
+### MCP Registry and Connector Marketplace
+
+Claude Code includes a built-in **connector marketplace** for discovering and connecting MCP servers without manual configuration:
+
+\`\`\`bash
+# Search for available connectors by keyword
+# (In Claude Code, use the search_mcp_registry tool or /connect command)
+
+# Example: finding a Jira connector
+> "Connect to my Jira instance"
+# Claude Code searches the registry, finds the Jira connector,
+# and presents a "Connect" button for one-click setup
+\`\`\`
+
+**How the Registry Works:**
+- **Discovery** — Search by keyword (e.g., "github", "database", "slack") to find available connectors
+- **One-click connect** — Connectors handle OAuth flows and authentication automatically
+- **Auto-configuration** — Connected servers are added to your MCP configuration without manual JSON editing
+- **Tool activation** — Once connected, the server's tools become immediately available in your Claude Code session
+
+**Popular MCP Servers in the Ecosystem:**
+
+| Server | What It Provides |
+|--------|-----------------|
+| **Filesystem** | Read/write files, search directories, watch for changes |
+| **GitHub** | Issues, PRs, code search, repository management |
+| **Slack** | Send messages, read channels, search conversations |
+| **PostgreSQL / SQLite** | Query databases, inspect schemas, run migrations |
+| **Puppeteer / Playwright** | Browser automation, web scraping, testing |
+| **Memory / Knowledge Graph** | Persistent memory across sessions |
+
 ### Tool Design Best Practices
 
 **1. Clear, Descriptive Names and Descriptions:**
@@ -4114,9 +4245,9 @@ Claude selects tools based on the natural language description. Be specific abou
 - [Computer Use Documentation](https://docs.anthropic.com/en/docs/build-with-claude/computer-use) — Official Computer Use guide
         `,
         keyTakeaways: [
-          "MCP is an open standard that decouples tool provision from model integration — build once, connect to any MCP client",
+          "MCP servers expose three primitives (Tools, Resources, Prompts) over standardized transports (stdio, SSE, Streamable HTTP)",
+          "The MCP Registry / Connector marketplace enables one-click discovery and connection of MCP servers",
           "Tool descriptions are critical — Claude chooses tools based on natural language descriptions, not code",
-          "Computer Use extends Claude's action space to any GUI application but requires careful safety controls",
           "Apply the principle of least privilege: narrow scope, clear boundaries, explicit permissions for every tool"
         ],
         interviewQuestions: [
@@ -4271,6 +4402,217 @@ Claude Code is Anthropic's CLI agent for software development. It is a real-worl
 4. **Iterative verification** — After each edit, runs relevant tests or checks
 5. **Error recovery** — If a test fails, analyzes the error and adjusts approach
 
+### The \`.claude/\` Directory Structure
+
+Claude Code uses a \`.claude/\` directory at the project root (and \`~/.claude/\` globally) to store configuration, memory, and extensibility artifacts:
+
+\`\`\`
+.claude/
+├── CLAUDE.md              # Project memory — instructions, conventions, context
+├── settings.json          # Configuration: allowed/denied tools, MCP servers
+├── settings.local.json    # Local overrides (gitignored)
+├── plans/                 # Implementation plans for complex tasks
+├── scheduled-tasks/       # Automated recurring tasks
+│   └── daily-standup/
+│       └── SKILL.md       # Task definition with frontmatter + prompt
+├── worktrees/             # Isolated git worktrees for parallel work
+└── launch.json            # Dev server configurations for preview
+\`\`\`
+
+**\`CLAUDE.md\` — Project Memory:**
+
+The most important file. Claude Code reads this automatically at the start of every session. Use it to tell Claude about your project:
+
+\`\`\`markdown
+# Project: My SaaS App
+
+## Build & Test
+- Run tests: \\\`npm test\\\`
+- Run single test: \\\`npm test -- --grep "test name"\\\`
+- Build: \\\`npm run build\\\`
+- Lint: \\\`npm run lint\\\`
+
+## Code Conventions
+- Use TypeScript strict mode
+- Prefer functional components with hooks
+- Error handling: always use Result<T, E> pattern
+- Database: use Drizzle ORM, never raw SQL
+
+## Architecture
+- /src/api — Express route handlers
+- /src/services — Business logic
+- /src/db — Database models and migrations
+\`\`\`
+
+Claude Code also reads \`CLAUDE.md\` files from parent directories and subdirectories, creating a layered instruction system.
+
+**\`settings.json\` — Configuration:**
+
+\`\`\`json
+{
+  "permissions": {
+    "allow": ["Bash(npm test)", "Bash(npm run lint)", "Read", "Glob", "Grep"],
+    "deny": ["Bash(rm -rf)"]
+  },
+  "mcpServers": {
+    "my-db": {
+      "command": "node",
+      "args": ["./mcp-servers/db-server.js"],
+      "env": { "DATABASE_URL": "postgresql://..." }
+    }
+  }
+}
+\`\`\`
+
+### SKILL.md Files — Reusable Skills
+
+Claude Code's skill system lets you create reusable, parameterized task definitions. Skills are stored as \`SKILL.md\` files with YAML frontmatter:
+
+\`\`\`markdown
+---
+name: deploy-staging
+description: Deploy the current branch to the staging environment
+---
+
+## Steps
+1. Run the test suite: \\\`npm test\\\`
+2. Build the project: \\\`npm run build\\\`
+3. Deploy to staging: \\\`npm run deploy:staging\\\`
+4. Run smoke tests against staging URL
+5. Report the deployment status and any issues found
+\`\`\`
+
+**Where Skills Live:**
+- \`~/.claude/scheduled-tasks/{taskId}/SKILL.md\` — For scheduled automated tasks
+- Skills can be invoked by scheduled tasks or referenced in workflows
+- The frontmatter defines metadata; the body defines the prompt/instructions Claude follows
+
+### Claude Code Hooks — Custom Automation Pipelines
+
+Hooks let you run custom scripts before or after specific Claude Code events. They enable automation pipelines without modifying Claude Code itself.
+
+**Hook Events:**
+
+| Event | When It Fires | Common Use |
+|-------|---------------|------------|
+| \`UserMessage\` | Before Claude processes a user message | Input validation, logging |
+| \`ToolResult\` | After a tool returns its result | Result transformation, audit logging |
+| \`Notification\` | When Claude sends a notification | Custom alert routing |
+| \`Stop\` | When the agent loop completes | Cleanup, summary generation |
+
+**Configuring Hooks in \`settings.json\`:**
+
+\`\`\`json
+{
+  "hooks": {
+    "ToolResult": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \\"Tool executed at $(date)\\" >> ~/.claude/audit.log"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./scripts/post-session-cleanup.js"
+          }
+        ]
+      }
+    ]
+  }
+}
+\`\`\`
+
+**Use Cases for Hooks:**
+- **Audit logging** — Log every tool execution for compliance
+- **Auto-formatting** — Run Prettier/Black after every file edit
+- **Notifications** — Send Slack messages when Claude finishes a task
+- **Guardrails** — Validate tool inputs before execution
+- **Metrics** — Track token usage, session duration, tool call frequency
+
+### Slash Commands
+
+Claude Code provides built-in slash commands and supports custom skill-based commands:
+
+**Built-in Commands:**
+
+| Command | Purpose |
+|---------|---------|
+| \`/help\` | Show available commands and usage |
+| \`/commit\` | Create a git commit with AI-generated message |
+| \`/review-pr\` | Review a pull request |
+| \`/model\` | Switch between Claude models |
+| \`/clear\` | Clear conversation context |
+| \`/compact\` | Compress conversation to save context |
+| \`/memory\` | Edit CLAUDE.md project memory |
+
+**Custom Skill-Based Commands:**
+
+Skills can register as slash commands, making them discoverable and invocable from the CLI. When a user types \`/my-command\`, Claude Code looks for a matching skill and invokes it.
+
+### Worktrees — Isolated Parallel Work
+
+Claude Code integrates with Git worktrees for safe, isolated experimentation:
+
+\`\`\`bash
+# In Claude Code, ask to work in a worktree:
+> "Start a worktree to experiment with the new auth system"
+
+# Claude Code creates:
+# .claude/worktrees/<name>/ — a full working copy on a new branch
+# All changes are isolated from your main branch
+# When done, keep the worktree or remove it cleanly
+\`\`\`
+
+**Why Worktrees Matter for Agents:**
+- **Safe experimentation** — The agent can make breaking changes without affecting your working branch
+- **Parallel tasks** — Work on multiple features simultaneously in isolated environments
+- **Easy cleanup** — Remove the worktree to discard all changes, or merge when satisfied
+- **Branch isolation** — Each worktree gets its own branch, preventing accidental commits to main
+
+### Scheduled Tasks — Automated Recurring Work
+
+Claude Code supports cron-based scheduled tasks that run automatically:
+
+\`\`\`bash
+# Create a scheduled task
+# Claude Code stores it in ~/.claude/scheduled-tasks/{taskId}/SKILL.md
+
+# Examples of scheduled tasks:
+# - Daily standup summary: "0 9 * * 1-5" (weekdays at 9 AM)
+# - Weekly dependency audit: "0 10 * * 1" (Mondays at 10 AM)
+# - Inbox triage: "0 8 * * *" (daily at 8 AM)
+\`\`\`
+
+**Task Configuration:**
+- **Cron expressions** — Standard 5-field cron in local timezone (not UTC)
+- **One-time tasks** — Use ISO 8601 timestamps for single-fire tasks (reminders, one-off automation)
+- **Ad-hoc tasks** — No schedule; triggered manually when needed
+- **Enable/disable** — Pause and resume tasks without deleting them
+
+### IDE Integrations
+
+Claude Code works across multiple development environments:
+
+| Environment | Integration | Key Features |
+|-------------|-------------|--------------|
+| **Terminal** | Native CLI | Full feature set, fastest interaction |
+| **VS Code** | Official extension | Inline suggestions, sidebar chat, command palette integration |
+| **JetBrains** | Official plugin | IntelliJ, WebStorm, PyCharm support with embedded terminal |
+
+**Terminal-Native Advantages:**
+- Direct access to all system tools and scripts
+- No UI overhead — pure text interaction
+- Composable with Unix pipelines and scripts
+- Works over SSH for remote development
+
 ### Claude Agent SDK
 
 The Agent SDK provides opinionated abstractions for building agent loops, reducing boilerplate while maintaining flexibility.
@@ -4389,12 +4731,14 @@ Understanding token economics is critical for production cost management:
 ### Key References
 - [Claude API Documentation](https://docs.anthropic.com/en/docs/welcome) — Complete API reference
 - [Claude Code Overview](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) — Claude Code architecture and capabilities
+- [Claude Code Hooks](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/hooks) — Pre/post event hooks for automation
+- [Claude Code MCP Configuration](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/mcp) — Connecting MCP servers to Claude Code
 - [Prompt Caching Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — How to implement prompt caching
 - [Batch API Documentation](https://docs.anthropic.com/en/docs/build-with-claude/message-batches) — Batch processing guide
         `,
         keyTakeaways: [
-          "Claude Code demonstrates a complete production agent: persistent context, tool orchestration, safety checks, and user interaction",
-          "The Agent SDK provides opinionated abstractions for the agent loop, reducing boilerplate while maintaining flexibility",
+          "Claude Code's .claude/ directory (CLAUDE.md, settings.json, hooks, skills) is a blueprint for extensible agent architecture",
+          "Hooks, scheduled tasks, and SKILL.md files turn Claude Code from a tool into a customizable automation platform",
           "Context window management is one of the hardest production challenges — good strategies can 10x effective context",
           "Prompt caching can reduce costs by 90% for repetitive workloads — always design for cacheable prompt prefixes"
         ],
