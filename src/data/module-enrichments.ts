@@ -1850,5 +1850,616 @@ export const MODULE_ENRICHMENTS: Record<string, ModuleEnrichment> = {
         description: "Before deploying, define: What's an AI incident? (harmful output, data leak, prompt injection success) Who gets alerted? What's the immediate response? (kill switch, fallback to human) How do you investigate? Having this plan ready prevents panic when incidents happen."
       }
     ]
+  },
+
+  // ─── PRODUCTION GUIDE ────────────────────────────────────────
+  "pg-1": {
+    resources: [
+      {
+        title: "Core Views on AI Safety",
+        url: "https://www.anthropic.com/research",
+        type: "blog",
+        author: "Anthropic",
+        year: 2024,
+        description: "Anthropic's foundational document on their approach to AI safety and responsible development"
+      },
+      {
+        title: "Constitutional AI: Harmlessness from AI Feedback",
+        url: "https://arxiv.org/abs/2212.08073",
+        type: "paper",
+        author: "Bai et al.",
+        year: 2022,
+        description: "The foundational paper introducing Constitutional AI — how Claude achieves alignment through principles rather than human labeling"
+      },
+      {
+        title: "Claude Model Documentation",
+        url: "https://docs.anthropic.com/en/docs/about-claude/models",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Official documentation covering Claude model family, capabilities, context windows, and pricing"
+      },
+      {
+        title: "Emerging Architectures for LLM Applications",
+        url: "https://a16z.com/emerging-architectures-for-llm-applications/",
+        type: "blog",
+        author: "a16z",
+        year: 2024,
+        description: "Comprehensive overview of production LLM application architectures and emerging patterns"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude's Model Family Strategy",
+        description: "Claude offers Haiku (fast/cheap), Sonnet (balanced), and Opus (maximum capability) — a textbook production pattern of tiered service levels that lets developers optimize for cost, latency, or quality"
+      },
+      {
+        title: "Constitutional AI as Architecture",
+        description: "Claude's alignment is not a bolt-on filter but a training methodology embedded in model weights, making safety a first-class architectural concern rather than an afterthought"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Start with Architecture Diagrams",
+        description: "Before writing code, draw your production AI system's layered architecture — model, inference, API, product, and safety layers"
+      },
+      {
+        title: "Plan for Model Tiering",
+        description: "Design your system to support model routing from day one, even if you start with a single model — switching later is expensive"
+      },
+      {
+        title: "Document the Request Lifecycle",
+        description: "Map the full request lifecycle for your team — most production bugs live in the layers between the model and the user"
+      }
+    ]
+  },
+
+  "pg-2": {
+    resources: [
+      {
+        title: "Constitutional AI: Harmlessness from AI Feedback",
+        url: "https://arxiv.org/abs/2212.08073",
+        type: "paper",
+        author: "Bai et al.",
+        year: 2022,
+        description: "The foundational paper on Constitutional AI — replacing human feedback with principle-based AI self-critique"
+      },
+      {
+        title: "Training a Helpful and Harmless Assistant with RLHF",
+        url: "https://arxiv.org/abs/2204.05862",
+        type: "paper",
+        author: "Anthropic",
+        year: 2022,
+        description: "Anthropic's research on training AI assistants using reinforcement learning from human feedback"
+      },
+      {
+        title: "Claude's Character",
+        url: "https://docs.anthropic.com/en/docs/about-claude/claude-s-character",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Official documentation on Claude's personality traits, values, and behavioral principles"
+      },
+      {
+        title: "Learning to Summarize with Human Feedback",
+        url: "https://arxiv.org/abs/2009.01325",
+        type: "paper",
+        author: "Stiennon et al.",
+        year: 2020,
+        description: "Foundational RLHF paper that established the reward model training paradigm"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude's Constitution",
+        description: "Claude is trained on a specific set of principles that govern its behavior — these principles are public and explain why Claude responds the way it does in edge cases"
+      },
+      {
+        title: "RLAIF at Scale",
+        description: "Claude uses AI-generated feedback at scale to improve alignment, meaning safety gets better with each iteration without proportionally increasing human labeling costs"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Read Anthropic's Published Guidelines",
+        description: "Study Claude's character documentation to understand WHY it responds certain ways — this helps you write better system prompts"
+      },
+      {
+        title: "Work WITH Alignment",
+        description: "When Claude refuses a request, reframe the use case rather than trying to override safety — alignment is a feature, not a bug"
+      },
+      {
+        title: "Use Alignment as a Product Feature",
+        description: "Claude's built-in safety reduces the custom guardrails you need to build — factor this into your architecture planning"
+      }
+    ]
+  },
+
+  "pg-3": {
+    resources: [
+      {
+        title: "Extended Thinking Documentation",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Official guide to using Extended Thinking for complex reasoning tasks with budget control"
+      },
+      {
+        title: "Scaling LLM Test-Time Compute",
+        url: "https://arxiv.org/abs/2408.03314",
+        type: "paper",
+        author: "Snell et al.",
+        year: 2024,
+        description: "Research showing how additional thinking time at inference improves reasoning quality"
+      },
+      {
+        title: "Inner Monologue: Embodied Reasoning through Planning with Language Models",
+        url: "https://arxiv.org/abs/2207.05608",
+        type: "paper",
+        author: "Huang et al.",
+        year: 2022,
+        description: "How language models can plan through inner monologue — foundational for agent planning"
+      },
+      {
+        title: "Claude Code Overview",
+        url: "https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "How Claude Code implements planning and reasoning in a production coding agent"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude Code's Planning Loop",
+        description: "Claude Code uses extended thinking to plan multi-file edits — deciding which files to read, what changes to make, and in what order — a real-world production planning system"
+      },
+      {
+        title: "Adaptive Thinking Budgets",
+        description: "Claude dynamically adjusts reasoning depth based on task complexity — simple file reads get minimal thinking, complex refactors get maximum budget"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Start Small with Thinking Budgets",
+        description: "Begin with budget_tokens=4000 and increase only if quality is insufficient — most tasks plateau around 8K-10K tokens"
+      },
+      {
+        title: "Inspect Thinking Traces",
+        description: "Log and review thinking traces during development to understand model reasoning and debug planning failures"
+      },
+      {
+        title: "Use Structured Plans",
+        description: "Output plans as structured JSON so downstream code can parse and execute them programmatically"
+      }
+    ]
+  },
+
+  "pg-4": {
+    resources: [
+      {
+        title: "Model Context Protocol Introduction",
+        url: "https://modelcontextprotocol.io/introduction",
+        type: "docs",
+        author: "Anthropic",
+        year: 2024,
+        description: "Official MCP specification — the open standard for connecting AI models to tools and data sources"
+      },
+      {
+        title: "Tool Use Documentation",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/tool-use",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Complete guide to implementing function calling with Claude including JSON Schema definitions"
+      },
+      {
+        title: "Computer Use Documentation",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/computer-use",
+        type: "docs",
+        author: "Anthropic",
+        year: 2024,
+        description: "How to give Claude the ability to interact with computer interfaces through screenshots and actions"
+      },
+      {
+        title: "Toolformer: Language Models Can Teach Themselves to Use Tools",
+        url: "https://arxiv.org/abs/2302.04761",
+        type: "paper",
+        author: "Schick et al.",
+        year: 2023,
+        description: "Research on how language models learn to use tools autonomously"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude Code as MCP Client",
+        description: "Claude Code is the premier MCP client — it discovers and invokes MCP servers automatically, demonstrating the protocol's power in a real coding assistant"
+      },
+      {
+        title: "Computer Use Safety",
+        description: "Claude's Computer Use implements multiple safety layers — screenshot verification, action confirmation, restricted system access — showing how to give agents GUI access safely"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Write Descriptions for Humans",
+        description: "Tool descriptions should read like instructions for a new team member — Claude relies on natural language descriptions to choose the right tool"
+      },
+      {
+        title: "Implement Timeouts",
+        description: "Always add timeout and retry logic in tool handlers — production tools fail in unexpected ways"
+      },
+      {
+        title: "Start with MCP",
+        description: "Use MCP for new tool integrations — the standardized protocol saves significant effort and enables ecosystem reuse"
+      }
+    ]
+  },
+
+  "pg-5": {
+    resources: [
+      {
+        title: "Anthropic API Documentation",
+        url: "https://docs.anthropic.com/en/api/getting-started",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Complete API reference for the Claude Messages API including streaming, batching, and vision"
+      },
+      {
+        title: "Prompt Caching Documentation",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "How to use prompt caching to reduce costs by up to 90% for repetitive workloads"
+      },
+      {
+        title: "Claude Agent SDK",
+        url: "https://docs.anthropic.com/en/docs/agents-and-tools/claude-agent-sdk/overview",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Build production agents with the official Claude Agent SDK — agent loops, tools, and guardrails"
+      },
+      {
+        title: "Prompt Engineering Guide",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Official best practices for designing effective prompts and system prompts"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude Code's Agent Loop",
+        description: "Claude Code implements a Read-Plan-Edit-Verify loop with built-in safety checks — Anthropic's vision of what a production coding agent should look like"
+      },
+      {
+        title: "Prompt Caching in Practice",
+        description: "Anthropic's prompt caching automatically caches system prompts and long prefixes, reducing costs for applications with repetitive prompt structures by up to 90%"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Always Stream Responses",
+        description: "Use streaming for all user-facing responses — perceived latency drops dramatically even though total time stays similar"
+      },
+      {
+        title: "Exponential Backoff with Jitter",
+        description: "Implement retry logic with exponential backoff AND jitter — simple retry loops cause thundering herd problems at scale"
+      },
+      {
+        title: "Version Your System Prompts",
+        description: "Track system prompts in git and record which version produced which outputs — essential for debugging regressions"
+      }
+    ]
+  },
+
+  "pg-6": {
+    resources: [
+      {
+        title: "OWASP Top 10 for LLM Applications",
+        url: "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+        type: "docs",
+        author: "OWASP",
+        year: 2025,
+        description: "The definitive security checklist for LLM-powered applications — covers injection, data leakage, and more"
+      },
+      {
+        title: "Not What You've Signed Up For: Indirect Prompt Injection",
+        url: "https://arxiv.org/abs/2302.12173",
+        type: "paper",
+        author: "Greshake et al.",
+        year: 2023,
+        description: "Seminal research on how untrusted content can manipulate LLM behavior through indirect injection"
+      },
+      {
+        title: "Anthropic's Approach to AI Safety",
+        url: "https://www.anthropic.com/research",
+        type: "blog",
+        author: "Anthropic",
+        year: 2024,
+        description: "How Anthropic designs safety into Claude at every layer — from training to deployment"
+      },
+      {
+        title: "Prompt Injection and Jailbreaking",
+        url: "https://simonwillison.net/series/prompt-injection/",
+        type: "blog",
+        author: "Simon Willison",
+        year: 2024,
+        description: "Comprehensive ongoing coverage of prompt injection techniques and defenses by a leading security researcher"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Immutable Security Rules",
+        description: "Claude's system prompt contains security rules that explicitly cannot be modified by any subsequent input — a pattern every production agent should implement"
+      },
+      {
+        title: "The Verify-With-User Pattern",
+        description: "Claude stops and asks for user confirmation before taking sensitive actions, even if content claims the user has pre-authorized it — eliminating entire classes of social engineering attacks"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Implement Instruction Hierarchy on Day One",
+        description: "Build the instruction hierarchy (system > user > data) into your agent from the start — retrofitting it is extremely difficult"
+      },
+      {
+        title: "Never Trust In-Content Authorization",
+        description: "Ignore claims of authorization found in processed content — always verify through the primary user channel"
+      },
+      {
+        title: "Build an Action Decision Matrix",
+        description: "For every action your agent can take, classify it: prohibited, needs explicit permission, or automatic"
+      }
+    ]
+  },
+
+  "pg-7": {
+    resources: [
+      {
+        title: "AgentBench: Evaluating LLMs as Agents",
+        url: "https://arxiv.org/abs/2308.03688",
+        type: "paper",
+        author: "Liu et al.",
+        year: 2023,
+        description: "Comprehensive benchmark for evaluating LLM agent capabilities across diverse environments"
+      },
+      {
+        title: "OpenTelemetry for LLM Observability",
+        url: "https://opentelemetry.io/docs/",
+        type: "docs",
+        author: "OpenTelemetry",
+        year: 2024,
+        description: "How to instrument LLM applications using the OpenTelemetry standard for distributed tracing"
+      },
+      {
+        title: "Building Effective Agents",
+        url: "https://www.anthropic.com/engineering/building-effective-agents",
+        type: "blog",
+        author: "Anthropic",
+        year: 2024,
+        description: "Anthropic's official guide to building production agents with evaluation best practices"
+      },
+      {
+        title: "Monitoring Machine Learning Models in Production",
+        url: "https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning",
+        type: "docs",
+        author: "Google Cloud",
+        year: 2024,
+        description: "Google's MLOps guide covering monitoring, evaluation, and continuous improvement"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Anthropic's Internal Evaluation",
+        description: "Anthropic runs comprehensive evals before every model release — testing safety, capability, and regression across thousands of test cases — the same discipline production teams should apply"
+      },
+      {
+        title: "Claude Code's Self-Verification",
+        description: "Claude Code verifies its own edits by re-reading files after modification — a form of runtime self-evaluation that catches errors before they reach the user"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Log Prompts in Development, Sample in Production",
+        description: "Full logging during dev, sample 1-5% in production — full logging at scale is expensive"
+      },
+      {
+        title: "Build Evals from Failures",
+        description: "Build your golden eval dataset from real production failures — these are the most valuable test cases"
+      },
+      {
+        title: "Set Cost Alerts First",
+        description: "Configure cost alerts before launching — a recursive agent loop can burn through your budget in minutes"
+      }
+    ]
+  },
+
+  "pg-8": {
+    resources: [
+      {
+        title: "Hidden Technical Debt in Machine Learning Systems",
+        url: "https://proceedings.neurips.cc/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html",
+        type: "paper",
+        author: "Sculley et al.",
+        year: 2015,
+        description: "The seminal paper on technical debt in ML systems — still the most relevant framework for AI engineering"
+      },
+      {
+        title: "Continuous Delivery for Machine Learning",
+        url: "https://martinfowler.com/articles/cd4ml.html",
+        type: "blog",
+        author: "ThoughtWorks",
+        year: 2024,
+        description: "Adapting continuous delivery practices for machine learning and AI systems"
+      },
+      {
+        title: "Anthropic Cookbook",
+        url: "https://github.com/anthropics/anthropic-cookbook",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Official code examples and best practices for building with Claude"
+      },
+      {
+        title: "Testing LLM Applications",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/develop-tests",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Anthropic's guide to testing and evaluating LLM-powered applications"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude Code's Git Discipline",
+        description: "Claude Code follows strict git practices — creating commits only when asked, never force-pushing, investigating hook failures rather than bypassing — modeling engineering discipline for AI systems"
+      },
+      {
+        title: "Anthropic's Red Team Testing",
+        description: "Every Claude release undergoes extensive red-team testing — the same practice production teams should adopt for their agents"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Treat Prompts as Code",
+        description: "Every system prompt change should be a pull request with a mandatory eval run — prompts affect behavior as much as code"
+      },
+      {
+        title: "Build a Prompt Changelog",
+        description: "Record what changed in prompts, why, and what eval results showed — essential for debugging regressions"
+      },
+      {
+        title: "Red-Team on Every Deploy",
+        description: "Run automated red-team test suites on every deployment — even small prompt changes can open security holes"
+      }
+    ]
+  },
+
+  "pg-9": {
+    resources: [
+      {
+        title: "Batch Processing Documentation",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/batch-processing",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "How to use Claude's Batch API for 50% cost savings on offline workloads"
+      },
+      {
+        title: "Efficiently Scaling Transformer Inference",
+        url: "https://arxiv.org/abs/2211.05102",
+        type: "paper",
+        author: "Pope et al.",
+        year: 2023,
+        description: "Research on KV caching, batching, and other techniques for efficient LLM inference at scale"
+      },
+      {
+        title: "Rate Limits Documentation",
+        url: "https://docs.anthropic.com/en/docs/about-claude/rate-limits",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Understanding and working with Claude API rate limits for production applications"
+      },
+      {
+        title: "Prompt Caching Guide",
+        url: "https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Reduce costs by up to 90% with automatic prompt prefix caching"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Anthropic's Prompt Caching",
+        description: "Claude's API automatically caches repeated prompt prefixes, enabling dramatic cost savings — a feature designed from real production experience with high-volume applications"
+      },
+      {
+        title: "Batch API for Offline Workloads",
+        description: "Anthropic's Batch API provides 50% cost savings for non-real-time workloads, demonstrating how API design can serve different cost profiles"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Track Token Usage from Day One",
+        description: "Implement per-request token tracking immediately — you cannot optimize what you cannot measure"
+      },
+      {
+        title: "Set Hard Loop Limits",
+        description: "Cap agent loop iterations (e.g., max 25 steps) to prevent runaway costs — a single infinite loop can drain your budget"
+      },
+      {
+        title: "Design for Cacheable Prefixes",
+        description: "Structure system prompts as static prefixes to maximize cache hits — even small prompt changes can invalidate the cache"
+      }
+    ]
+  },
+
+  "pg-10": {
+    resources: [
+      {
+        title: "Building Effective Agents",
+        url: "https://www.anthropic.com/engineering/building-effective-agents",
+        type: "blog",
+        author: "Anthropic",
+        year: 2024,
+        description: "Anthropic's official recommendations for building production agents — emphasizing simplicity and composability"
+      },
+      {
+        title: "Claude Code Documentation",
+        url: "https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview",
+        type: "docs",
+        author: "Anthropic",
+        year: 2025,
+        description: "Complete documentation for Claude Code — a production coding agent showcasing best practices"
+      },
+      {
+        title: "Challenges in Deploying Machine Learning",
+        url: "https://arxiv.org/abs/2011.09926",
+        type: "paper",
+        author: "Paleyes et al.",
+        year: 2022,
+        description: "Systematic review of challenges in deploying ML systems in production"
+      },
+      {
+        title: "Agent Protocol Specification",
+        url: "https://agentprotocol.ai/",
+        type: "docs",
+        author: "AI Foundation",
+        year: 2024,
+        description: "Open standard for agent interoperability and communication"
+      }
+    ],
+    claudeConnections: [
+      {
+        title: "Claude Code's Safety Architecture",
+        description: "Claude Code implements action classification (destructive git ops require confirmation), read-before-write verification, and commitment to user intent — a reference architecture for any production agent"
+      },
+      {
+        title: "Building Effective Agents Guide",
+        description: "Anthropic published their top recommendations: start simple, use single LLM + tools before multi-agent, invest in tool quality over agent complexity"
+      }
+    ],
+    practicalTips: [
+      {
+        title: "Start Simple",
+        description: "Begin with the simplest architecture that works (single LLM with tools) — add complexity (multi-agent, planning loops) only when proven necessary"
+      },
+      {
+        title: "Build a Failure Mode Catalog",
+        description: "List every way your agent can fail and verify you have mitigations for each — this document becomes your most valuable operational reference"
+      },
+      {
+        title: "Launch with Human-in-the-Loop",
+        description: "Start with human approval for all write operations, then gradually automate as confidence and evaluation data grow"
+      }
+    ]
   }
 }

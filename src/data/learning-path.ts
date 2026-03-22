@@ -37,15 +37,15 @@ export const LEARNING_PATH: LearningPhase[] = [
     milestone: "Can red-team LLM systems, build guardrail pipelines, design secure AI architectures"
   },
   {
-    phase: "Phase 6: Production & Interviews",
-    duration: "Week 13-15",
-    description: "Learn production deployment and ace your interviews with system design practice.",
-    tracks: ["production", "system-design"],
-    milestone: "Can design and deploy production agentic systems, pass system design interviews"
+    phase: "Phase 6: Production Mastery",
+    duration: "Week 13-17",
+    description: "Master production-grade agentic systems using Claude as a case study, plus deployment and interview preparation.",
+    tracks: ["production", "system-design", "production-grade-agents"],
+    milestone: "Can architect, build, deploy, and operate production-grade agentic systems with comprehensive safety, observability, and cost management"
   },
   {
     phase: "Phase 7: Build & Demonstrate",
-    duration: "Week 16-20",
+    duration: "Week 18-22",
     description: "Build capstone projects that demonstrate your skills to employers.",
     tracks: ["projects"],
     milestone: "Portfolio of 2-3 agentic system projects with documentation"
