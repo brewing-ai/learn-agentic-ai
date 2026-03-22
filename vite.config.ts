@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: '/learn-agentic-ai/',
+  base: process.env.GITHUB_ACTIONS ? '/learn-agentic-ai/' : '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
